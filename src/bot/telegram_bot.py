@@ -14,6 +14,8 @@ from telegram.ext import (
 
 from config.settings import TELEGRAM_TOKEN, ALLOWED_USER_IDS
 from src.ai.intelligence_engine import IntelligenceEngine
+from src.ai.vector_search import VectorSearch
+from src.ai.continuous_learning import ContinuousLearning
 from src.data.parquet_processor import ParquetProcessor
 from src.reports.pdf_generator import PDFGenerator
 from src.reports.report_finder import ReportFinder
@@ -24,15 +26,43 @@ logger = logging.getLogger(__name__)
 class TelegramBot:
     """Bot do Telegram para interface C-Level"""
 
-    def __init__(self):
+    def __init__(self, enable_vector_search: bool = False, enable_learning: bool = True):
         self.token = TELEGRAM_TOKEN
         self.allowed_users = set(ALLOWED_USER_IDS) if ALLOWED_USER_IDS else set()
 
         # Inicializa componentes
         self.parquet_processor = ParquetProcessor()
-        self.intelligence_engine = IntelligenceEngine(self.parquet_processor)
+
+        # Módulos avançados (opcionais)
+        self.vector_search = None
+        self.continuous_learning = None
+
+        # VectorSearch (requer chromadb instalado)
+        if enable_vector_search:
+            try:
+                self.vector_search = VectorSearch()
+                if self.vector_search.enabled:
+                    logger.info("VectorSearch habilitado no bot")
+            except Exception as e:
+                logger.warning(f"VectorSearch não disponível: {e}")
+
+        # ContinuousLearning (sempre tenta habilitar por padrão)
+        if enable_learning:
+            try:
+                self.continuous_learning = ContinuousLearning()
+                logger.info("ContinuousLearning habilitado no bot")
+            except Exception as e:
+                logger.warning(f"ContinuousLearning não disponível: {e}")
+
+        # Inicializa Intelligence Engine com módulos opcionais
+        self.intelligence_engine = IntelligenceEngine(
+            self.parquet_processor,
+            vector_search=self.vector_search,
+            continuous_learning=self.continuous_learning
+        )
+
         self.pdf_generator = PDFGenerator()
-        self.report_finder = ReportFinder()  # Novo: busca relatórios Power BI
+        self.report_finder = ReportFinder()
 
         # Application do bot
         self.application = None

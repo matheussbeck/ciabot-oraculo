@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 import uvicorn
 
 from src.ai.intelligence_engine import IntelligenceEngine
+from src.ai.vector_search import VectorSearch
+from src.ai.continuous_learning import ContinuousLearning
 from src.data.parquet_processor import ParquetProcessor
 from src.reports.report_finder import ReportFinder
 from src.analytics.predictions import PredictionsEngine
@@ -61,7 +63,8 @@ security = HTTPBearer()
 class CIABotAPI:
     """API REST do CIABot Oráculo"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, enable_vector_search: bool = False,
+                 enable_learning: bool = True):
         self.app = FastAPI(
             title="CIABot Oráculo API",
             description="API REST para consultas agrícolas com IA",
@@ -72,7 +75,28 @@ class CIABotAPI:
 
         # Componentes
         self.parquet_processor = ParquetProcessor()
-        self.intelligence_engine = IntelligenceEngine(self.parquet_processor)
+
+        # Módulos avançados (opcionais)
+        self.vector_search = None
+        self.continuous_learning = None
+
+        if enable_vector_search:
+            try:
+                self.vector_search = VectorSearch()
+            except Exception as e:
+                logger.warning(f"VectorSearch não disponível: {e}")
+
+        if enable_learning:
+            try:
+                self.continuous_learning = ContinuousLearning()
+            except Exception as e:
+                logger.warning(f"ContinuousLearning não disponível: {e}")
+
+        self.intelligence_engine = IntelligenceEngine(
+            self.parquet_processor,
+            vector_search=self.vector_search,
+            continuous_learning=self.continuous_learning
+        )
         self.report_finder = ReportFinder()
         self.predictions_engine = PredictionsEngine()
 

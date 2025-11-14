@@ -21,9 +21,14 @@ logger = logging.getLogger(__name__)
 class IntelligenceEngine:
     """Motor de IA com cálculo de confiança para respostas"""
 
-    def __init__(self, parquet_processor: ParquetProcessor):
+    def __init__(self, parquet_processor: ParquetProcessor,
+                 vector_search=None, continuous_learning=None):
         self.processor = parquet_processor
         self.ai_provider = AI_PROVIDER.lower()
+
+        # Módulos opcionais
+        self.vector_search = vector_search
+        self.learning = continuous_learning
 
         # Inicializa cliente de IA
         if self.ai_provider == "anthropic":
@@ -36,6 +41,10 @@ class IntelligenceEngine:
             raise ValueError(f"Provedor de IA não suportado: {AI_PROVIDER}")
 
         logger.info(f"Intelligence Engine inicializado com {AI_PROVIDER}")
+        if self.vector_search:
+            logger.info("VectorSearch habilitado")
+        if self.learning:
+            logger.info("ContinuousLearning habilitado")
 
     def process_query(self, user_query: str, user_context: Dict = None) -> Dict[str, Any]:
         """
@@ -50,21 +59,27 @@ class IntelligenceEngine:
         """
         logger.info(f"Processando query: {user_query}")
 
-        # 1. Analisa a intenção da consulta
+        # 1. Busca queries similares (se VectorSearch habilitado)
+        if self.vector_search and self.vector_search.enabled:
+            similar_queries = self.vector_search.search_similar_queries(user_query, n_results=3)
+            if similar_queries:
+                logger.info(f"Queries similares encontradas: {len(similar_queries)}")
+
+        # 2. Analisa a intenção da consulta
         intent = self._analyze_intent(user_query)
         logger.info(f"Intenção detectada: {intent}")
 
-        # 2. Extrai parâmetros da consulta
+        # 3. Extrai parâmetros da consulta
         params = self._extract_parameters(user_query, intent)
         logger.info(f"Parâmetros extraídos: {params}")
 
-        # 3. Busca dados relevantes
+        # 4. Busca dados relevantes
         data_context = self._get_data_context(params)
 
-        # 4. Calcula se há dados suficientes
+        # 5. Calcula se há dados suficientes
         data_confidence = self._calculate_data_confidence(data_context, params)
 
-        # 5. Gera resposta com IA
+        # 6. Gera resposta com IA
         if data_confidence >= MIN_CONFIDENCE_TO_RESPOND:
             response = self._generate_response(
                 user_query, intent, params, data_context, data_confidence
@@ -73,6 +88,25 @@ class IntelligenceEngine:
             response = self._generate_low_confidence_response(
                 user_query, params, data_confidence
             )
+
+        # 7. Registra interação para aprendizado (se habilitado)
+        if self.learning:
+            try:
+                self.learning.record_interaction(
+                    query=user_query,
+                    response=response,
+                    params=params,
+                    user_id=user_context.get("user_id") if user_context else None
+                )
+            except Exception as e:
+                logger.error(f"Erro ao registrar aprendizado: {e}")
+
+        # 8. Adiciona query ao histórico vetorial (se habilitado)
+        if self.vector_search and self.vector_search.enabled:
+            try:
+                self.vector_search.add_query(user_query, response, user_context)
+            except Exception as e:
+                logger.error(f"Erro ao adicionar query ao vetor DB: {e}")
 
         return response
 
