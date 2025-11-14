@@ -287,16 +287,58 @@ OPERACOES = [
 ]
 ```
 
+## 🚀 Features Avançadas
+
+### ✅ Implementado
+
+- **API REST**: Interface HTTP completa para integração externa ([Docs](docs/ADVANCED_FEATURES.md#api-rest))
+- **Busca Vetorial**: Sistema de busca semântica com embeddings ([Docs](docs/ADVANCED_FEATURES.md#busca-vetorial))
+- **Aprendizado Contínuo**: Sistema que aprende com interações ([Docs](docs/ADVANCED_FEATURES.md#aprendizado-continuo))
+- **Previsões e Tendências**: Análise preditiva avançada ([Docs](docs/ADVANCED_FEATURES.md#previsoes))
+
+### ⚠️ Em Desenvolvimento
+
+- **Integração com Dashboard**: Envio de alertas e métricas ([Docs](docs/ADVANCED_FEATURES.md#dashboard))
+- **Integração com WhatsApp**: Mensagens via WhatsApp ([Docs](docs/ADVANCED_FEATURES.md#whatsapp))
+- **Alertas Proativos**: Monitoramento contínuo automático ([Docs](docs/ADVANCED_FEATURES.md#alertas-proativos))
+
+### 📖 Documentação Completa
+
+Para detalhes sobre as features avançadas, consulte: **[docs/ADVANCED_FEATURES.md](docs/ADVANCED_FEATURES.md)**
+
+### 🎮 Como Usar
+
+#### Bot Telegram (Padrão)
+```bash
+python main.py
+```
+
+#### API REST
+```bash
+python api_server.py
+# Acesse: http://localhost:8000/docs
+```
+
 ## 📈 Roadmap
 
-- [ ] Implementação de busca vetorial com embeddings
-- [ ] Sistema de aprendizado contínuo
-- [ ] Dashboard web
+### Concluído ✅
+- [x] Implementação de busca vetorial com embeddings
+- [x] Sistema de aprendizado contínuo
+- [x] Previsões e tendências
+- [x] API REST
+- [x] Busca de relatórios Power BI existentes
+
+### Em Desenvolvimento ⚠️
+- [ ] Dashboard web próprio
+- [ ] Integração com Dashboard de monitoramento (estrutura pronta)
+- [ ] Integração com WhatsApp (estrutura pronta)
+- [ ] Alertas proativos (estrutura pronta)
+
+### Futuro 🔮
 - [ ] Suporte a múltiplos idiomas
-- [ ] Integração com WhatsApp
-- [ ] Alertas proativos
-- [ ] Previsões e tendências
-- [ ] API REST
+- [ ] Machine Learning avançado
+- [ ] Integração com Slack, Teams
+- [ ] App mobile nativo
 
 ## 🔒 Segurança
 
